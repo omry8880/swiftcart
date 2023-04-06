@@ -3,12 +3,23 @@ import 'package:provider/provider.dart';
 import 'package:swiftcart/providers/orders.dart' show Orders;
 import 'package:swiftcart/widgets/order_item.dart';
 
-class OrdersScreen extends StatelessWidget {
+class OrdersScreen extends StatefulWidget {
   static const String routeName = '/orders-screen';
   const OrdersScreen({super.key});
 
+  @override
+  State<OrdersScreen> createState() => _OrdersScreenState();
+}
+
+class _OrdersScreenState extends State<OrdersScreen> {
   Future<void> refreshPage(BuildContext context) async {
     await Provider.of<Orders>(context, listen: false).fetchOrders();
+  }
+
+  @override
+  void initState() {
+    Provider.of<Orders>(context, listen: false).fetchOrders();
+    super.initState();
   }
 
   @override

@@ -4,7 +4,7 @@ class BottomTwoNavBar extends StatelessWidget {
   final IconData headingIcon;
   final VoidCallback headerOnPressed;
   final String trailingLabel;
-  final VoidCallback trailingOnPressed;
+  final VoidCallback? trailingOnPressed;
   const BottomTwoNavBar(
       {super.key,
       required this.headingIcon,
@@ -42,17 +42,18 @@ class BottomTwoNavBar extends StatelessWidget {
             ),
             SizedBox(
               width: 0.8 * MediaQuery.of(context).size.width,
-              child: FloatingActionButton.extended(
-                  elevation: 0,
-                  splashColor: Theme.of(context).primaryColor,
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15)),
-                  onPressed: trailingOnPressed,
-                  label: Text(
-                    trailingLabel,
-                    style: const TextStyle(color: Colors.white, fontSize: 16),
-                  )),
+              child: ElevatedButton(
+                style: ButtonStyle(
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                        RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18.0),
+                ))),
+                onPressed: trailingOnPressed,
+                child: Text(
+                  trailingLabel,
+                  style: const TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
             )
           ],
         ),

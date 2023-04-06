@@ -77,18 +77,18 @@ class CartScreen extends StatelessWidget {
             itemCount: cart.items.length,
           )),
           BottomTwoNavBar(
-              headingIcon: Icons.home_outlined,
-              headerOnPressed: cart.totalPrice <= 0
-                  ? () {}
-                  : (() => Navigator.of(context).pushReplacementNamed('/')),
-              trailingLabel: 'Order Now',
-              trailingOnPressed: () {
-                if (cart.items.isNotEmpty) {
-                  Provider.of<Orders>(context, listen: false)
-                      .addOrder(cart.items.values.toList(), cart.totalPrice);
-                  cart.clear();
-                }
-              })
+            headingIcon: Icons.home_outlined,
+            headerOnPressed: () =>
+                Navigator.of(context).pushReplacementNamed('/'),
+            trailingLabel: 'Order Now',
+            trailingOnPressed: cart.totalPrice > 0
+                ? () {
+                    Provider.of<Orders>(context, listen: false)
+                        .addOrder(cart.items.values.toList(), cart.totalPrice);
+                    cart.clear();
+                  }
+                : null,
+          ),
         ],
       ),
     );

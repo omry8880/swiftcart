@@ -34,18 +34,24 @@ class Orders with ChangeNotifier {
       final data = json.decode(response.body) as Map<String, dynamic>;
       final List<OrderItem> loadedOrders = [];
       data.forEach((orderId, orderData) {
-        loadedOrders.insert(
-            0,
-            OrderItem(
-                id: orderId,
-                amount: orderData['price'],
-                products: orderData['products'],
-                dateTime: orderData['time']));
+        loadedOrders.add(OrderItem(
+          id: orderId,
+          amount: orderData['price'],
+          dateTime: DateTime.parse(orderData['time']),
+          products: (orderData['products'] as List<dynamic>)
+              .map((e) => CartItem(
+                  id: e.id,
+                  title: e.title,
+                  quantity: e.quantity,
+                  price: e.price,
+                  imageUrl: e.imageUrl))
+              .toList(),
+        ));
       });
       _orders = loadedOrders;
       notifyListeners();
     } catch (error) {
-      rethrow;
+      const HttpException('Could not manage to fetch orders from server.');
     }
   }
 
@@ -55,6 +61,7 @@ class Orders with ChangeNotifier {
       final response = await http.post(db,
           body: json.encode({
             'price': total,
+            'time': timestamp.toIso8601String(),
             'products': cartProducts
                 .map((e) => json.encode({
                       'id': e.id,
@@ -64,7 +71,6 @@ class Orders with ChangeNotifier {
                       'imageUrl': e.imageUrl
                     }))
                 .toList(),
-            'time': timestamp.toIso8601String(),
           }));
 
       _orders.insert(
@@ -72,11 +78,11 @@ class Orders with ChangeNotifier {
           OrderItem(
               id: json.decode(response.body)['name'],
               amount: total,
-              products: cartProducts,
-              dateTime: timestamp));
+              dateTime: timestamp,
+              products: cartProducts));
       notifyListeners();
     } catch (error) {
-      const HttpException('Could not manage to add order');
+      const HttpException('Could not manage to add order.');
     }
   }
 }
