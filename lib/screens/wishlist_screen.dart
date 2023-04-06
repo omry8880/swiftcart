@@ -47,7 +47,9 @@ class _WishlistScreenState extends State<WishlistScreen> {
         Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : const ProductsGridView())
+                : const ProductsGridView(
+                    showFav: true,
+                  ))
       ]),
     );
   }

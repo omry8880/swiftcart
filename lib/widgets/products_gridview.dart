@@ -4,12 +4,13 @@ import 'package:swiftcart/providers/products.dart';
 import 'package:swiftcart/widgets/product_item.dart';
 
 class ProductsGridView extends StatelessWidget {
-  const ProductsGridView({super.key});
+  final bool showFav;
+  const ProductsGridView({super.key, this.showFav = false});
 
   @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<Products>(context);
-    final products = productsData.favoriteItems;
+    final products = showFav ? productsData.favoriteItems : productsData.items;
 
     return GridView.builder(
       physics: const BouncingScrollPhysics(),

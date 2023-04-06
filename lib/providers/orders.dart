@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -32,20 +33,25 @@ class Orders with ChangeNotifier {
     try {
       final response = await http.get(db);
       final data = json.decode(response.body) as Map<String, dynamic>;
+      if (data.isEmpty) {
+        _orders = [];
+        notifyListeners();
+        return;
+      }
       final List<OrderItem> loadedOrders = [];
       data.forEach((orderId, orderData) {
         loadedOrders.add(OrderItem(
           id: orderId,
           amount: orderData['price'],
-          dateTime: DateTime.parse(orderData['time']),
           products: (orderData['products'] as List<dynamic>)
-              .map((e) => CartItem(
-                  id: e.id,
-                  title: e.title,
-                  quantity: e.quantity,
-                  price: e.price,
-                  imageUrl: e.imageUrl))
+              .map((item) => CartItem(
+                  id: item['id'],
+                  title: item['title'],
+                  price: item['price'],
+                  quantity: item['quantity'],
+                  imageUrl: item['imageUrl']))
               .toList(),
+          dateTime: DateTime.parse(orderData['time']),
         ));
       });
       _orders = loadedOrders;
@@ -61,25 +67,24 @@ class Orders with ChangeNotifier {
       final response = await http.post(db,
           body: json.encode({
             'price': total,
-            'time': timestamp.toIso8601String(),
             'products': cartProducts
-                .map((e) => json.encode({
+                .map((e) => {
                       'id': e.id,
                       'title': e.title,
                       'price': e.price,
                       'quantity': e.quantity,
                       'imageUrl': e.imageUrl
-                    }))
+                    })
                 .toList(),
+            'time': timestamp.toIso8601String(),
           }));
 
-      _orders.insert(
-          0,
-          OrderItem(
-              id: json.decode(response.body)['name'],
-              amount: total,
-              dateTime: timestamp,
-              products: cartProducts));
+      final newOrder = OrderItem(
+          id: json.decode(response.body)['name'],
+          amount: total,
+          dateTime: timestamp,
+          products: cartProducts);
+      _orders.insert(0, newOrder);
       notifyListeners();
     } catch (error) {
       const HttpException('Could not manage to add order.');
