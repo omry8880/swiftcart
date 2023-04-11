@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:swiftcart/providers/auth.dart';
 
 import '../providers/cart.dart';
 import '../providers/product.dart';
 import '../screens/product_detail_screen.dart';
-import 'package:http/http.dart' as http;
 
 class ProductItem extends StatelessWidget {
   const ProductItem({super.key});
@@ -13,6 +13,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(context, listen: true);
     final cart = Provider.of<Cart>(context, listen: false);
+    final authData = Provider.of<Auth>(context, listen: false);
 
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(23)),
@@ -31,7 +32,8 @@ class ProductItem extends StatelessWidget {
                 builder: ((context, value, child) {
                   return IconButton(
                     onPressed: () {
-                      product.toggleFavoriteStatus();
+                      product.toggleFavoriteStatus(
+                          authData.token!, authData.userId!);
                     },
                     icon: Icon(
                       product.isFavorite

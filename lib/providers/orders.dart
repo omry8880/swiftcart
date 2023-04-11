@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -21,9 +20,10 @@ class OrderItem {
 
 class Orders with ChangeNotifier {
   List<OrderItem> _orders = [];
+  final String authToken;
+  final String userId;
 
-  final db = Uri.parse(
-      'https://swiftcart-3463d-default-rtdb.firebaseio.com/orders.json');
+  Orders(this.authToken, this._orders, this.userId);
 
   List<OrderItem> get orders {
     return [..._orders];
@@ -31,7 +31,8 @@ class Orders with ChangeNotifier {
 
   Future<void> fetchOrders() async {
     try {
-      final response = await http.get(db);
+      final response = await http.get(Uri.parse(
+          'https://swiftcart-3463d-default-rtdb.firebaseio.com/orders/$userId.json?auth=$authToken'));
       final data = json.decode(response.body) as Map<String, dynamic>;
       if (data.isEmpty) {
         _orders = [];
@@ -64,7 +65,9 @@ class Orders with ChangeNotifier {
   Future<void> addOrder(List<CartItem> cartProducts, double total) async {
     final timestamp = DateTime.now();
     try {
-      final response = await http.post(db,
+      final response = await http.post(
+          Uri.parse(
+              'https://swiftcart-3463d-default-rtdb.firebaseio.com/orders/$userId.json?auth=$authToken'),
           body: json.encode({
             'price': total,
             'products': cartProducts

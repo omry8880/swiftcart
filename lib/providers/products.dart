@@ -9,9 +9,10 @@ import 'product.dart';
 class Products with ChangeNotifier {
   // ignore: prefer_final_fields
   List<Product> _items = [];
+  final String authToken;
+  final String userId;
 
-  final db = Uri.parse(
-      'https://swiftcart-3463d-default-rtdb.firebaseio.com/products.json');
+  Products(this.authToken, this.userId, this._items);
 
   List<Product> get items {
     return [..._items];
@@ -25,21 +26,30 @@ class Products with ChangeNotifier {
     return _items.firstWhere((element) => element.id == id);
   }
 
-  Future<void> fetchProducts() async {
+  Future<void> fetchProducts([bool filterByUser = false]) async {
+    final filterString =
+        filterByUser ? 'orderBy="creatorId"&equalTo="$userId"' : '';
     try {
-      final response = await http.get(db);
+      final response = await http.get(Uri.parse(
+          'https://swiftcart-3463d-default-rtdb.firebaseio.com/products.json?auth=$authToken&$filterString'));
       final data = json.decode(response.body) as Map<String, dynamic>;
+      final favoriteResponse = await http.get(Uri.parse(
+          'https://swiftcart-3463d-default-rtdb.firebaseio.com/userFavorites/$userId.json?auth=$authToken'));
+      final favoriteData = json.decode(favoriteResponse.body);
       final List<Product> loadedProducts = [];
       data.forEach((productId, productData) {
         loadedProducts.insert(
             0,
             Product(
-                id: productId,
-                title: productData['title'],
-                description: productData['description'],
-                price: productData['price'],
-                imageUrl: productData['imageUrl'],
-                isFavorite: productData['isFavorite']));
+              id: productId,
+              title: productData['title'],
+              description: productData['description'],
+              price: productData['price'],
+              imageUrl: productData['imageUrl'],
+              isFavorite: favoriteData == null
+                  ? false
+                  : favoriteData[productId] ?? false,
+            ));
       });
       _items = loadedProducts;
       notifyListeners();
@@ -50,13 +60,16 @@ class Products with ChangeNotifier {
 
   Future<void> addProduct(Product p) async {
     try {
-      final response = await http.post(db,
+      final response = await http.post(
+          Uri.parse(
+              'https://swiftcart-3463d-default-rtdb.firebaseio.com/products.json?auth=$authToken'),
           body: json.encode({
             'title': p.title,
             'description': p.description,
             'price': p.price,
             'imageUrl': p.imageUrl,
-            'isFavorite': p.isFavorite
+            //'isFavorite': p.isFavorite
+            'creatorId': userId,
           }));
 
       final newProduct = Product(
@@ -75,7 +88,7 @@ class Products with ChangeNotifier {
   Future<void> updateProduct(String id, Product newProduct) async {
     final prodIndex = _items.indexWhere((element) => element.id == id);
     final url = Uri.parse(
-        'https://swiftcart-3463d-default-rtdb.firebaseio.com/products/$id.json');
+        'https://swiftcart-3463d-default-rtdb.firebaseio.com/products/$id.json?auth=$authToken');
     await http.patch(url,
         body: json.encode({
           'title': newProduct.title,
@@ -89,7 +102,7 @@ class Products with ChangeNotifier {
 
   Future<void> deleteProduct(String productId) async {
     final url = Uri.parse(
-        'https://swiftcart-3463d-default-rtdb.firebaseio.com/products/$productId.json');
+        'https://swiftcart-3463d-default-rtdb.firebaseio.com/products/$productId.json?auth=$authToken');
     final existingProductIndex =
         _items.indexWhere((element) => element.id == productId);
     Product? existingProduct = _items[existingProductIndex];
@@ -105,18 +118,4 @@ class Products with ChangeNotifier {
     }
     existingProduct = null;
   }
-
-  /*Future<int> checkFavLength() async {
-    var count = 0;
-    final db = Uri.parse(
-        'https://swiftcart-3463d-default-rtdb.firebaseio.com/products');
-    final response = await http.get(db);
-    final data = json.decode(response.body) as Map<String, dynamic>;
-    final len = data.forEach((key, value) {
-      if (key ==) {
-
-      }
-    })
-    return count;
-  }*/
 }

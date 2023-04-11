@@ -12,26 +12,12 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-  var _isLoading = false;
-
   Future<void> refreshPage(BuildContext context) async {
     await Provider.of<Orders>(context, listen: false).fetchOrders();
   }
 
   @override
-  void initState() {
-    setState(() {
-      _isLoading = true;
-    });
-    refreshPage(context).then((value) => setState(
-          () => _isLoading = false,
-        ));
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final orderData = Provider.of<Orders>(context);
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
       appBar: AppBar(
@@ -45,15 +31,27 @@ class _OrdersScreenState extends State<OrdersScreen> {
         elevation: 0,
       ),
       body: RefreshIndicator(
-        onRefresh: () => refreshPage(context),
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                itemBuilder: ((context, index) =>
-                    OrderItem(order: orderData.orders[index])),
-                itemCount: orderData.orders.length,
-              ),
-      ),
+          onRefresh: () => refreshPage(context),
+          child: FutureBuilder(
+            future: Provider.of<Orders>(context, listen: false).fetchOrders(),
+            builder: (context, dataSnapshot) {
+              if (dataSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else {
+                if (dataSnapshot.error != null) {
+                  return const Center(child: Text('An error occured.'));
+                } else {
+                  return Consumer<Orders>(builder: (context, orderData, child) {
+                    return ListView.builder(
+                      itemBuilder: ((context, index) =>
+                          OrderItem(order: orderData.orders[index])),
+                      itemCount: orderData.orders.length,
+                    );
+                  });
+                }
+              }
+            },
+          )),
     );
   }
 }

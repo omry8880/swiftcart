@@ -10,7 +10,7 @@ class UserProductsScreen extends StatelessWidget {
   const UserProductsScreen({super.key});
 
   Future<void> refreshPage(BuildContext context) async {
-    await Provider.of<Products>(context, listen: false).fetchProducts();
+    await Provider.of<Products>(context, listen: false).fetchProducts(true);
   }
 
   @override
@@ -35,23 +35,29 @@ class UserProductsScreen extends StatelessWidget {
                 icon: const Icon(Icons.add)),
           ],
         ),
-        body: RefreshIndicator(
-          onRefresh: () => refreshPage(context),
-          child: Padding(
-            padding: const EdgeInsets.all(9.0),
-            child: Consumer(
-              builder: (BuildContext context, value, Widget? child) {
-                return ListView.builder(
-                    itemCount: productsData.items.length,
-                    itemBuilder: ((context, index) {
-                      return UserProductItem(
-                          id: productsData.items[index].id,
-                          title: productsData.items[index].title,
-                          imageUrl: productsData.items[index].imageUrl);
-                    }));
-              },
-            ),
-          ),
+        body: FutureBuilder(
+          future: refreshPage(context),
+          builder: (context, snapshot) => snapshot.connectionState ==
+                  ConnectionState.waiting
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: () => refreshPage(context),
+                  child: Padding(
+                    padding: const EdgeInsets.all(9.0),
+                    child: Consumer(
+                      builder: (BuildContext context, value, Widget? child) {
+                        return ListView.builder(
+                            itemCount: productsData.items.length,
+                            itemBuilder: ((context, index) {
+                              return UserProductItem(
+                                  id: productsData.items[index].id,
+                                  title: productsData.items[index].title,
+                                  imageUrl: productsData.items[index].imageUrl);
+                            }));
+                      },
+                    ),
+                  ),
+                ),
         ));
   }
 }

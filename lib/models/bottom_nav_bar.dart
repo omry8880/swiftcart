@@ -6,6 +6,7 @@ import '../screens/profile_screen.dart';
 import '../screens/wishlist_screen.dart';
 
 class BottomNavBar extends StatefulWidget {
+  static const routeName = '/bottom-navbar';
   const BottomNavBar({super.key});
 
   @override

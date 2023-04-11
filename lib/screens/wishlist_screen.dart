@@ -4,7 +4,6 @@ import 'package:swiftcart/utils/colors_util.dart';
 
 import '../providers/products.dart';
 import '../widgets/products_gridview.dart';
-import 'package:http/http.dart' as http;
 
 class WishlistScreen extends StatefulWidget {
   // UNFINISHED AND SHOULD BE CHANGED BEFORE RELEASE
