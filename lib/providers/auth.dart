@@ -13,7 +13,7 @@ class Auth with ChangeNotifier {
   Timer? _authTimer;
   String? _username; //for profile showcase purposes
 
-  static const _params = {'key': 'AIzaSyD8mJqDQYr5MeIQPF4FlanaR5DMhA_V5vY'};
+  static const _params = {'key': '#API KEY WAS REMOVED, YOU CAN LINK YOUR API KEY INSTEAD HERE. IF YOU DO SO, HTTP REQUEST LINKS WOULD NEED AN UPDATE AS WELL.'};
 
   bool get isAuth {
     return token != null;
